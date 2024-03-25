@@ -7,6 +7,10 @@
     <groupId>virkato.otus</groupId>
     <artifactId>java-pro</artifactId>
     <version>1.0</version>
+    <packaging>pom</packaging>
+    <modules>
+        <module>ReflectionAPI</module>
+    </modules>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
