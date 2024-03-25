@@ -1,6 +1,6 @@
-package my.hw;
+package my.test.framework;
 
-import my.hw.starter.TestStarter;
+import my.test.framework.starter.TestStarter;
 
 import java.lang.reflect.InvocationTargetException;
 

@@ -1,8 +1,8 @@
-package my.hw.starter;
+package my.test.framework.starter;
 
-import my.hw.annotations.After;
-import my.hw.annotations.Before;
-import my.hw.annotations.Test;
+import my.test.framework.annotations.After;
+import my.test.framework.annotations.Before;
+import my.test.framework.annotations.Test;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
@@ -34,18 +34,20 @@ public class TestStarter {
 
         final Map<Method, Throwable> results = new HashMap<>();
         final List<Method> testMethods = getTestMethods(testClass);
+        final List<Method> beforeMethods = getWrapMethods(testMethods, Before.class);
+        final List<Method> afterMethods = getWrapMethods(testMethods, After.class);
 
         getTestOnlyMethods(testMethods).forEach(m -> {
             results.put(m, null);
             try {
 
-                execTestMethods(object, m, getWrapMethods(testMethods, Before.class), results);
+                execTestMethods(object, m, beforeMethods, results);
                 try {
                     m.invoke(object);
                 } catch (InvocationTargetException e) {
                     results.put(m, e.getTargetException());
                 }
-                execTestMethods(object, m, getWrapMethods(testMethods, After.class), results);
+                execTestMethods(object, m, afterMethods, results);
 
             } catch (Exception e) {
                 results.put(m, e);
@@ -65,6 +67,7 @@ public class TestStarter {
 
     /**
      * Получить список всех тестовых методов на основании аннотации Test
+     *
      * @param testClass тестовый класс
      * @return список всех методов Test
      */
@@ -80,8 +83,9 @@ public class TestStarter {
 
     /**
      * Получить список тестовых методов не имеющих аннотации Before/After
+     *
      * @param testMethods все найденные тестовые методы
-     * @return список методов имеющих только аннотацию Test
+     * @return список public методов определённых как тесты
      */
     private static List<Method> getTestOnlyMethods(List<Method> testMethods) {
         return testMethods.stream()
@@ -89,14 +93,15 @@ public class TestStarter {
                 .sorted((o1, o2) -> {
                     int order1 = o1.isAnnotationPresent(Test.class) ? o1.getAnnotation(Test.class).order() : 10;
                     int order2 = o2.isAnnotationPresent(Test.class) ? o2.getAnnotation(Test.class).order() : 10;
-                    return order1 - order2 < 0 ? -1 : order1 == order2 ? 0 : 1;
+                    return order1 - order2;
                 })
                 .collect(Collectors.toList());
     }
 
     /**
      * Получить список "обёрточных" тестовых методов Before/After
-     * @param testMethods все доступные тестовые методы тестового класса
+     *
+     * @param testMethods          все доступные тестовые методы тестового класса
      * @param repeatableAnnotation конкретный тип "обёрточного" тестового метода
      * @return список методов Before либо After
      */
@@ -108,10 +113,11 @@ public class TestStarter {
 
     /**
      * Только один метод группы Before или After выполнится
-     * @param testClass тестовый класс
-     * @param method оборачиваемый тестовый метод
+     *
+     * @param testClass   тестовый класс
+     * @param method      оборачиваемый тестовый метод
      * @param testMethods группа тестовый методов Before/After
-     * @param results хранилище результатов прохождения теста
+     * @param results     хранилище результатов прохождения теста
      */
     private static void execTestMethods(Object testClass, Method method, List<Method> testMethods, Map<Method, Throwable> results) {
         testMethods.stream().findFirst().ifPresent(mb -> {
