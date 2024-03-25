@@ -5,11 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>virkato.otus</groupId>
-        <artifactId>JavaPro</artifactId>
+        <artifactId>java-pro</artifactId>
         <version>1.0</version>
     </parent>
 
-    <groupId>my.hw</groupId>
-    <artifactId>ReflectionAPI</artifactId>
+    <groupId>my.test.framework</groupId>
+    <artifactId>reflection-api</artifactId>
 
 </project>

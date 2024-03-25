@@ -1,8 +1,8 @@
-package my.hw;
+package my.test.framework;
 
-import my.hw.annotations.After;
-import my.hw.annotations.Before;
-import my.hw.annotations.Test;
+import my.test.framework.annotations.After;
+import my.test.framework.annotations.Before;
+import my.test.framework.annotations.Test;
 
 /**
  * Класс для проверки работоспособности собственных аннотаций
