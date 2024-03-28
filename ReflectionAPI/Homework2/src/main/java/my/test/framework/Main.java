@@ -1,7 +1,5 @@
 package my.test.framework;
 
-import my.test.framework.starter.TestStarter;
-
 import java.lang.reflect.InvocationTargetException;
 
 public class Main {
