@@ -1,17 +1,12 @@
-package my.test.framework.starter;
+package my.test.framework;
 
-import my.test.framework.annotations.After;
-import my.test.framework.annotations.Before;
-import my.test.framework.annotations.Test;
+import my.test.framework.annotations.*;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -36,6 +31,17 @@ public class TestStarter {
         final List<Method> testMethods = getTestMethods(testClass);
         final List<Method> beforeMethods = getWrapMethods(testMethods, Before.class);
         final List<Method> afterMethods = getWrapMethods(testMethods, After.class);
+        final List<Method> suiteMethods = getSuiteMethods(testClass);
+
+        getSuiteMethod(suiteMethods, BeforeSuite.class).ifPresent(ms -> {
+            try {
+                ms.invoke(object);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            } catch (InvocationTargetException e) {
+                throw new RuntimeException(e.getTargetException());
+            }
+        });
 
         getTestOnlyMethods(testMethods).forEach(m -> {
             results.put(m, null);
@@ -45,12 +51,30 @@ public class TestStarter {
                 try {
                     m.invoke(object);
                 } catch (InvocationTargetException e) {
-                    results.put(m, e.getTargetException());
+                    Throwable t = results.get(m);
+                    if (m.isAnnotationPresent(ThrowsException.class)) {
+                        if (e.getTargetException().getClass() != m.getAnnotation(ThrowsException.class).exception()) {
+                            t = e.getTargetException();
+                        }
+                    } else {
+                        t = e.getTargetException();
+                    }
+                    results.put(m, t);
                 }
                 execTestMethods(object, m, afterMethods, results);
 
             } catch (Exception e) {
                 results.put(m, e);
+            }
+        });
+
+        getSuiteMethod(suiteMethods, AfterSuite.class).ifPresent(ms -> {
+            try {
+                ms.invoke(object);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            } catch (InvocationTargetException e) {
+                throw new RuntimeException(e.getTargetException());
             }
         });
 
@@ -73,11 +97,14 @@ public class TestStarter {
      */
     private static List<Method> getTestMethods(Class<?> testClass) {
         boolean allMethodsAreTest = testClass.isAnnotationPresent(Test.class);
+        if (testClass.isAnnotationPresent(Disabled.class)) {
+            return Collections.emptyList();
+        }
         return Arrays.stream(testClass.getDeclaredMethods())
-                .filter(m -> (m.getModifiers() & Modifier.PUBLIC) > 0 &&
-                        allMethodsAreTest ||
-                        m.isAnnotationPresent(Test.class)
-                )
+                .filter(m -> !m.isAnnotationPresent(Disabled.class))
+                .filter(m -> !(m.isAnnotationPresent(BeforeSuite.class) || m.isAnnotationPresent(AfterSuite.class)))
+                .filter(m -> (m.getModifiers() & (Modifier.PRIVATE | Modifier.STATIC)) == 0)
+                .filter(m -> allMethodsAreTest || m.isAnnotationPresent(Test.class))
                 .collect(Collectors.toList());
     }
 
@@ -91,9 +118,9 @@ public class TestStarter {
         return testMethods.stream()
                 .filter(m -> !m.isAnnotationPresent(Before.class) && !m.isAnnotationPresent(After.class))
                 .sorted((o1, o2) -> {
-                    int order1 = o1.isAnnotationPresent(Test.class) ? o1.getAnnotation(Test.class).order() : 10;
-                    int order2 = o2.isAnnotationPresent(Test.class) ? o2.getAnnotation(Test.class).order() : 10;
-                    return order1 - order2;
+                    int order1 = o1.isAnnotationPresent(Test.class) ? o1.getAnnotation(Test.class).priority() : 10;
+                    int order2 = o2.isAnnotationPresent(Test.class) ? o2.getAnnotation(Test.class).priority() : 10;
+                    return order2 - order1;
                 })
                 .collect(Collectors.toList());
     }
@@ -101,13 +128,42 @@ public class TestStarter {
     /**
      * Получить список "обёрточных" тестовых методов Before/After
      *
-     * @param testMethods          все доступные тестовые методы тестового класса
-     * @param repeatableAnnotation конкретный тип "обёрточного" тестового метода
+     * @param testMethods    все доступные тестовые методы тестового класса
+     * @param wrapAnnotation конкретный тип "обёрточного" тестового метода
      * @return список методов Before либо After
      */
-    private static List<Method> getWrapMethods(List<Method> testMethods, Class<? extends Annotation> repeatableAnnotation) {
+    private static List<Method> getWrapMethods(List<Method> testMethods, Class<? extends Annotation> wrapAnnotation) {
         return testMethods.stream()
-                .filter(m -> m.isAnnotationPresent(repeatableAnnotation))
+                .filter(m -> m.isAnnotationPresent(wrapAnnotation))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Получить метод типа BeforeSuite / AfterSuite
+     *
+     * @param testMethods
+     * @param suiteAnnotation
+     * @return
+     */
+    private static Optional<Method> getSuiteMethod(List<Method> testMethods, Class<? extends Annotation> suiteAnnotation) {
+        return testMethods.stream()
+                .filter(m -> m.isAnnotationPresent(suiteAnnotation))
+                .findFirst();
+    }
+
+    /**
+     * Только методы типа Suite
+     *
+     * @param testClass тестовый класс
+     * @return методы BeforeSuite и AfterSuite
+     */
+    private static List<Method> getSuiteMethods(Class<?> testClass) {
+        if (testClass.isAnnotationPresent(Disabled.class)) {
+            return Collections.emptyList();
+        }
+        return Arrays.stream(testClass.getDeclaredMethods())
+                .filter(m -> !m.isAnnotationPresent(Disabled.class))
+                .filter(m -> m.isAnnotationPresent(BeforeSuite.class) || m.isAnnotationPresent(AfterSuite.class))
                 .collect(Collectors.toList());
     }
 
