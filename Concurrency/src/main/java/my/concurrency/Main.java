@@ -8,9 +8,11 @@ public class Main {
 
         MyThreadPool threadPool = new MyThreadPool(3);
 
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 1000; i++) {
             int finalI = i;
-            threadPool.execute(() -> System.out.println(Thread.currentThread().getName() + "  work with 'task" + finalI + "'"));
+            threadPool.execute(() -> {
+                System.out.println(Thread.currentThread().getName() + "  work with 'task" + finalI + "'");
+            });
         }
         threadPool.shutdown();
     }
