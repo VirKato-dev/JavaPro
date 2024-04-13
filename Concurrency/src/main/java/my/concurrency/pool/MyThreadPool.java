@@ -8,19 +8,20 @@ public class MyThreadPool {
     private final int numberOfWorkers;
     private final Thread[] workers;
     private final LinkedList<Runnable> taskQueue = new LinkedList<>();
+    private volatile boolean isActive = true;
 
     private class Worker extends Thread {
-        int counter = 0;
+        int tasksFinished = 0;
 
         @Override
         public void run() {
-            while (!taskQueue.isEmpty() || !isInterrupted()) {
+            while (!taskQueue.isEmpty() || isActive) {
                 nextTask().ifPresent(r -> {
                     r.run();
-                    counter++;
+                    tasksFinished++;
                 });
             }
-            System.out.println(Thread.currentThread().getName() + " finished " + counter + " tasks");
+            System.out.println(getName() + " finished " + tasksFinished + " tasks");
         }
     }
 
@@ -33,7 +34,7 @@ public class MyThreadPool {
 
 
     public synchronized void execute(Runnable task) {
-        if (Thread.currentThread().isInterrupted()) {
+        if (!isActive) {
             throw new IllegalStateException();
         }
         taskQueue.add(task);
@@ -42,9 +43,7 @@ public class MyThreadPool {
 
 
     public void shutdown() {
-        for (Thread worker : workers) {
-            worker.interrupt();
-        }
+        isActive = false;
     }
 
 
