@@ -43,7 +43,6 @@ public class MyThreadPool {
             throw new IllegalStateException();
         }
         taskQueue.add(task);
-        notifyAll();
     }
 
 
