@@ -8,7 +8,21 @@ public class MyThreadPool {
     private final int numberOfWorkers;
     private final Thread[] workers;
     private final LinkedList<Runnable> taskQueue = new LinkedList<>();
-    private final ThreadLocal<Integer> counter = new ThreadLocal<>();
+
+    private class Worker extends Thread {
+        int counter = 0;
+
+        @Override
+        public void run() {
+            while (!taskQueue.isEmpty() || !isInterrupted()) {
+                nextTask().ifPresent(r -> {
+                    r.run();
+                    counter++;
+                });
+            }
+            System.out.println(Thread.currentThread().getName() + " finished " + counter + " tasks");
+        }
+    }
 
 
     public MyThreadPool(int numberOfWorkers) {
@@ -36,18 +50,7 @@ public class MyThreadPool {
 
     private void init() {
         for (int i = 0; i < numberOfWorkers; i++) {
-
-            workers[i] = new Thread(() -> {
-                counter.set(0);
-                while (!taskQueue.isEmpty() || !Thread.currentThread().isInterrupted()) {
-                    nextTask().ifPresent(r -> {
-                        r.run();
-                        counter.set(counter.get() + 1);
-                    });
-                }
-                System.out.println(Thread.currentThread().getName() + " finished " + counter.get() + " tasks");
-            });
-
+            workers[i] = new Worker();
             workers[i].start();
         }
     }
