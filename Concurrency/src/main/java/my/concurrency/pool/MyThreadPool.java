@@ -11,7 +11,12 @@ public class MyThreadPool {
     private volatile boolean isActive = true;
 
     private class Worker extends Thread {
-        int tasksFinished = 0;
+        private static int id = 1;
+        private int tasksFinished = 0;
+
+        public Worker() {
+            setName("Worker-" + id++);
+        }
 
         @Override
         public void run() {
