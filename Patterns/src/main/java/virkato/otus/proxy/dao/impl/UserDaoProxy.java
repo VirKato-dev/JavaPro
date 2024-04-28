@@ -10,18 +10,18 @@ import java.sql.SQLException;
 
 public class UserDaoProxy implements BaseDao {
     private final BaseDao dao = new UserDao();
-    private final Connection connection = H2DB.getConnection();
+    private Connection connection;
 
 
     @Override
     public User create(User user) throws SQLException {
+        connection = H2DB.getConnection();
         connection.setAutoCommit(false);
         try {
             user = dao.create(user);
+            connection.commit();
         } catch (SQLException e) {
             connection.rollback();
-        } finally {
-            connection.close();
         }
         return user;
     }
@@ -29,21 +29,22 @@ public class UserDaoProxy implements BaseDao {
 
     @Override
     public User read(Long id) throws SQLException {
-        connection.setAutoCommit(false);
+        connection = H2DB.getConnection();
+        connection.setAutoCommit(true);
         return dao.read(id);
     }
 
 
     @Override
     public boolean update(User user) throws SQLException {
+        connection = H2DB.getConnection();
         connection.setAutoCommit(false);
         boolean result = false;
         try {
             result = dao.update(user);
+            connection.commit();
         } catch (SQLException e) {
             connection.rollback();
-        } finally {
-            connection.close();
         }
         return result;
     }
@@ -51,14 +52,14 @@ public class UserDaoProxy implements BaseDao {
 
     @Override
     public boolean delete(long id) throws SQLException {
+        connection = H2DB.getConnection();
         connection.setAutoCommit(false);
         boolean result = false;
         try {
             result = dao.delete(id);
+            connection.commit();
         } catch (SQLException e) {
             connection.rollback();
-        } finally {
-            connection.close();
         }
         return result;
     }

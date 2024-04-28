@@ -17,7 +17,7 @@ public class H2DB {
 
                 Statement stmt = connection.createStatement();
                 connection.setAutoCommit(true);
-                stmt.execute("CREATE TABLE if not exists users (id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY, name VARCHAR(20), birthday VARCHAR(20))");
+                stmt.execute("CREATE TABLE if not exists users (id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY, name VARCHAR(20), birthday VARCHAR(20))");
             }
             return connection;
         } catch (SQLException e) {

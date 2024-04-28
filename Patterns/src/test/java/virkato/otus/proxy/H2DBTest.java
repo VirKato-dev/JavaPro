@@ -3,6 +3,7 @@ package virkato.otus.proxy;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import virkato.otus.proxy.connection.H2DB;
+import virkato.otus.proxy.dao.BaseDao;
 import virkato.otus.proxy.dao.impl.UserDao;
 import virkato.otus.proxy.dao.impl.UserDaoProxy;
 import virkato.otus.proxy.entity.User;
@@ -17,8 +18,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class H2DBTest {
 
-    UserDao dao = new UserDao();
-    UserDaoProxy proxy = new UserDaoProxy();
+//    BaseDao dao = new UserDao();
+    BaseDao dao = new UserDaoProxy();
 
 
     @Test

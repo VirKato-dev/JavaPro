@@ -34,24 +34,24 @@ public class UserDao implements BaseDao {
     @Override
     public User read(Long id) throws SQLException {
         connection = H2DB.getConnection();
-        String sql = String.format("select * from users where id = %d", id);
+        String sql = String.format("select * from users where id=%d", id);
 
         try (Statement statement = connection.createStatement()) {
             ResultSet rs = statement.executeQuery(sql);
             if (rs.next()) {
                 User user = new User(rs.getString("name"), rs.getString("birthday"));
-                user.setId(rs.getInt("id"));
+                user.setId(id);
                 return user;
             }
         }
-        throw new SQLException("User with id " + id + " not found.");
+        throw new SQLException("User with id=" + id + " not found.");
     }
 
 
     @Override
     public boolean update(User user) throws SQLException {
         connection = H2DB.getConnection();
-        String sql = String.format("update users set name = '%s', birthday = '%s' where id = %d",
+        String sql = String.format("update users set name='%s', birthday='%s' where id=%d",
                 user.getName(), user.getBirthday(), user.getId());
 
         try (Statement statement = connection.createStatement()) {
@@ -63,7 +63,7 @@ public class UserDao implements BaseDao {
     @Override
     public boolean delete(long id) throws SQLException {
         connection = H2DB.getConnection();
-        String sql = "delete from users where id = " + id;
+        String sql = "delete from users where id=" + id;
         try (Statement statement = connection.createStatement()) {
             statement.executeUpdate(sql);
             System.out.println();
