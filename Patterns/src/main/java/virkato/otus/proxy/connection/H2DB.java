@@ -14,10 +14,6 @@ public class H2DB {
         try {
             if (connection == null || connection.isClosed()) {
                 connection = DriverManager.getConnection(url);
-
-                Statement stmt = connection.createStatement();
-                connection.setAutoCommit(true);
-                stmt.execute("CREATE TABLE if not exists users (id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY, name VARCHAR(20), birthday VARCHAR(20))");
             }
             return connection;
         } catch (SQLException e) {

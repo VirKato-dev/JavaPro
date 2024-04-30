@@ -1,5 +1,7 @@
 package virkato.otus.proxy;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import virkato.otus.proxy.connection.H2DB;
@@ -16,15 +18,31 @@ import static org.junit.jupiter.api.Assertions.*;
 
 
 class H2DBTest {
+    static Connection connection = H2DB.getConnection();
 
-    //    BaseDao dao = new UserDao();
-    BaseDao dao = new UserDaoProxy();
+    //        BaseDao dao = new UserDao(connection);
+    BaseDao dao = new UserDaoProxy(connection);
+
+
+    @BeforeAll
+    static void setUp() throws SQLException {
+        try (Statement stmt = connection.createStatement()) {
+            connection.setAutoCommit(true);
+            stmt.execute("CREATE TABLE if not exists users (id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY, name VARCHAR(20), birthday VARCHAR(20))");
+        }
+    }
+
+    @AfterAll
+    static void tearDown() throws SQLException {
+        if (connection != null && !connection.isClosed()) {
+            connection.close();
+        }
+    }
 
 
     @Test
     @DisplayName("Проверка работы с базой")
     void getConnection() {
-        Connection connection = H2DB.getConnection();
         try {
             assertNotNull(connection);
 
