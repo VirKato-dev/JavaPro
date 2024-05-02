@@ -26,8 +26,9 @@ public class UserDaoProxy implements BaseDao {
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
+        } finally {
+            connection.setAutoCommit(autoCommit);
         }
-        connection.setAutoCommit(autoCommit);
         return user;
     }
 
@@ -37,8 +38,11 @@ public class UserDaoProxy implements BaseDao {
         User user;
         boolean autoCommit = connection.getAutoCommit();
         connection.setAutoCommit(true);
-        user = dao.read(id);
-        connection.setAutoCommit(autoCommit);
+        try {
+            user = dao.read(id);
+        } finally {
+            connection.setAutoCommit(autoCommit);
+        }
         return user;
     }
 
@@ -52,8 +56,9 @@ public class UserDaoProxy implements BaseDao {
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
+        } finally {
+            connection.setAutoCommit(autoCommit);
         }
-        connection.setAutoCommit(autoCommit);
     }
 
 
@@ -67,8 +72,9 @@ public class UserDaoProxy implements BaseDao {
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
+        } finally {
+            connection.setAutoCommit(autoCommit);
         }
-        connection.setAutoCommit(autoCommit);
         return result;
     }
 }
