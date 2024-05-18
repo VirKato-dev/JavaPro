@@ -13,6 +13,7 @@
         <module>StreamAPI</module>
         <module>ReflectionAPI</module>
         <module>Patterns</module>
+        <module>JdbcAdvanced</module>
     </modules>
 
     <properties>
