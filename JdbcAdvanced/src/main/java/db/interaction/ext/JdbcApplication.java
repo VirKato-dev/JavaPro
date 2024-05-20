@@ -18,22 +18,22 @@ public class JdbcApplication {
         private Long id;
         private String name;
         private int score;
-        private LocalDateTime createdAt;
+        private Date createdAt;
 
         public Student(String name, int score) {
             this.name = name;
             this.score = score;
-            this.createdAt = LocalDateTime.now();
+            this.createdAt = new Date(System.currentTimeMillis());
         }
 
         public Student(Long id, String name, int score) {
             this.id = id;
             this.name = name;
             this.score = score;
-            this.createdAt = LocalDateTime.now();
+            this.createdAt = new Date(System.currentTimeMillis());
         }
 
-        public Student(Long id, String name, int score, LocalDateTime createdAt) {
+        public Student(Long id, String name, int score, Date createdAt) {
             this.id = id;
             this.name = name;
             this.score = score;
@@ -56,7 +56,7 @@ public class JdbcApplication {
             dropTable();
             createTable();
             prepareStatements();
-            //insertOperationCreateNewStudent(new Student("Bob", 100));
+            insertOperationCreateNewStudent(new Student("Bob", 100));
             insertOperationCreateNewStudent2(new Student("bob", 1));
             System.out.println(selectOperationFindAllStudents());
         } catch (Exception e) {
@@ -237,7 +237,7 @@ public class JdbcApplication {
         try (ResultSet rs = statement.executeQuery("select * from students;")) {
             List<Student> out = new ArrayList<>();
             while (rs.next()) {
-                out.add(new Student(rs.getLong(1), rs.getString("name"), rs.getInt(3), rs.getTimestamp(4).toLocalDateTime()));
+                out.add(new Student(rs.getLong(1), rs.getString("name"), rs.getInt(3), new Date(rs.getLong(4))));
             }
             return Collections.unmodifiableList(out);
         }
@@ -292,7 +292,9 @@ public class JdbcApplication {
      * @throws SQLException <code>SQLException</code> пробрасывается просто наверх (допустимо в учебном примере)
      */
     private static void insertOperationCreateNewStudent(Student student) throws SQLException {
-        int affectedRowsCount = statement.executeUpdate(String.format("insert into students (name, score, created_at) values ('%s', %d, '%s');", student.name, student.score, student.createdAt));
+        String sql = String.format("insert into students (name, score, created_at) values ('%s', %d, '%s');", student.name, student.score, student.createdAt);
+        int affectedRowsCount = statement.executeUpdate(sql);
+        System.out.println(sql);
         System.out.printf("В БД сохранен новый студент %s (добавлено строк: %d)\n", student, affectedRowsCount);
     }
 
@@ -300,12 +302,13 @@ public class JdbcApplication {
 
         psInsert.setString(1, "Bob");
         psInsert.setInt(2, 1);
-        psInsert.setObject(3, LocalDateTime.now());
+        psInsert.setObject(3, new Date(System.currentTimeMillis()));
 
         ResultSet rs = psInsert.executeQuery();
 
         while (rs.next()) {
-            System.out.println(rs.getString(1) + " " + rs.getString(2));
+//            System.out.println(rs.getString(1) + " " + rs.getString(2));
+            System.out.println(rs.getInt(1));
         }
     }
 
