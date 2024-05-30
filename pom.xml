@@ -14,6 +14,7 @@
         <module>ReflectionAPI</module>
         <module>Patterns</module>
         <module>JdbcAdvanced</module>
+        <module>FxHttpServer</module>
     </modules>
 
     <properties>
