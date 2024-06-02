@@ -2,7 +2,9 @@ package ru.flamexander.http.server;
 
 public enum HttpStatus {
     OK(200, "OK"),
-    NO_CONTENT(204, "No Content");
+    NO_CONTENT(204, "No Content"),
+    METHOD_NOT_ALLOWED(405, "Method Not Allowed"),
+    NOT_ACCEPTABLE(406, "Not Acceptable");
 
     private int code;
     private String message;
@@ -18,5 +20,9 @@ public enum HttpStatus {
     HttpStatus(int code, String message) {
         this.code = code;
         this.message = message;
+    }
+
+    public String toString() {
+        return "HTTP/1.1 " + code + " " + message + "\r\n";
     }
 }

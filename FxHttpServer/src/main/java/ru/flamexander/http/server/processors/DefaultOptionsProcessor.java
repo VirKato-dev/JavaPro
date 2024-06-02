@@ -14,7 +14,7 @@ public class DefaultOptionsProcessor implements RequestProcessor {
                 "Access-Control-Allow-Origin: *\r\n" +
                 "Access-Control-Allow-Methods: POST, GET, OPTIONS, DELETE\r\n" +
                 "Access-Control-Allow-Headers: *\r\n" +
-                "Access-Control-Max-Age: 86400";
+                "Access-Control-Max-Age: 86400\r\n\r\n";
         output.write(response.getBytes(StandardCharsets.UTF_8));
     }
 }
