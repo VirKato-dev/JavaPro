@@ -6,13 +6,19 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class HttpRequest {
+    public final static String JSESSIONID = "JSESSIONID";
+
     private String rawRequest;
     private String uri;
     private HttpMethod method;
     private Map<String, String> parameters;
+    private Map<String, String> headers;
+    private Map<String, String> cookies;
+
     private String body;
 
     private static final Logger logger = LoggerFactory.getLogger(HttpRequest.class.getName());
@@ -29,6 +35,10 @@ public class HttpRequest {
         return parameters.get(key);
     }
 
+    public String getHeader(String name) {
+        return headers.get(name);
+    }
+
     public String getBody() {
         return body;
     }
@@ -41,9 +51,10 @@ public class HttpRequest {
         this.rawRequest = rawRequest;
         this.parseRequestLine();
         this.tryToParseBody();
+        this.parseRequestHeaders();
 
         logger.debug("\n{}", rawRequest);
-        logger.trace("{} {}\nParameters: {}\nBody: {}", method, uri, parameters, body); // TODO правильно все поназывать
+        logger.trace("{} {}\nParameters: {}\nBody: {}", method, uri, parameters, body); // TODO правильно все показывать
     }
 
     public void tryToParseBody() {
@@ -81,5 +92,35 @@ public class HttpRequest {
                 this.parameters.put(keyValue[0], keyValue[1]);
             }
         }
+    }
+
+    public void parseRequestHeaders() {
+        List<String> lines = rawRequest.lines().collect(Collectors.toList());
+        headers = new HashMap<>();
+        while (lines.size() > 1 && lines.get(1) != null && !lines.get(1).isEmpty()) {
+            String header = lines.get(1).substring(0, lines.get(1).indexOf(":"));
+            String value = lines.get(1).substring(header.length() + 1);
+            headers.put(header.trim(), value.trim());
+            lines.remove(1);
+        }
+        parseRequestCookies();
+    }
+
+    private void parseRequestCookies() {
+        cookies = new HashMap<>();
+        String[] pairs = headers.getOrDefault("Cookie", "").split(";");
+        for (String pair : pairs) {
+            String[] keyValue = pair.split("=");
+            if (keyValue.length == 2) {
+                cookies.put(keyValue[0], keyValue[1]);
+            }
+        }
+        if (getCookie(JSESSIONID).isEmpty()) {
+            cookies.put(JSESSIONID, UUID.randomUUID().toString());
+        }
+    }
+
+    public String getCookie(String key) {
+        return cookies.getOrDefault(key, "");
     }
 }
