@@ -15,6 +15,7 @@
         <module>Patterns</module>
         <module>JdbcAdvanced</module>
         <module>DI</module>
+        <module>JEE</module>
     </modules>
 
     <properties>
