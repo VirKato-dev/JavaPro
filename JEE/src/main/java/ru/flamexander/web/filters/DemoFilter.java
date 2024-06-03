@@ -1,11 +1,11 @@
-package ru.flamexander.web;
+package ru.flamexander.web.filters;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.*;
-import javax.servlet.annotation.WebFilter;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.*;
+import jakarta.servlet.annotation.WebFilter;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Date;
 
